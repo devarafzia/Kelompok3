@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pemetaan TPS3R</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(to bottom, #ffb35c, #ffe173);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 30px;
+    }
+
+    .header {
+      background: #c70000;
+      color: white;
+      border-radius: 20px;
+      padding: 30px 10px;
+      text-align: center;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 40px;
+      font-weight: 900;
+    }
+
+    .header p {
+      margin: 5px 0 0;
+      font-size: 20px;
+    }
+
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      margin-bottom: 40px;
+    }
+
+    .box-title {
+      font-size: 20px;
+      color: #c70000;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .deskripsi-area {
+      width: 100%;
+      height: 160px;
+      border: 2px solid #f0a0a0;
+      border-radius: 15px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+
+    .sub-box {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .sub-header {
+      background: #c70000;
+      color: white;
+      padding: 14px 18px;
+      font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .dropdown-content {
+      background: #fff0f0;
+      padding: 10px 20px;
+      display: none;
+    }
+
+    .dropdown-content div {
+      padding: 6px 0;
+      font-weight: bold;
+      cursor: pointer;
+      color: #c70000;
+    }
+
+    #map {
+      width: 100%;
+      height: 300px;
+    }
+
+    /* ====== LEGENDA AREA ======= */
+    .legend-list {
+      padding: 15px 20px;
+      font-size: 15px;
+      color: #c70000;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .legend-item input {
+      margin-right: 8px;
+      transform: scale(1.2);
+      accent-color: #c70000;
+    }
+
+    /* ====== ANGGOTA AREA ======= */
+    .anggota-box {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      margin-top: 40px;
+    }
+
+    .anggota-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 35px;
+      padding: 30px;
+    }
+
+    .anggota {
+      width: 140px;
+      text-align: center;
+    }
+
+    .anggota-img {
+      width: 100%;
+      height: 130px;
+      border-radius: 15px;
+      background: #d9f2ff;
+      object-fit: cover;
+    }
+
+    .anggota p {
+      color: #c70000;
+      margin: 5px 0 0;
+      font-weight: bold;
+      font-size: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+      <h1>PEMETAAN TPS3R</h1>
+      <p>Kelurahan Kaligawe 2025</p>
+    </div>
+
+    <!-- DESKRIPSI -->
+    <div class="box">
+      <div class="box-title">Deskripsi</div>
+      <textarea class="deskripsi-area"></textarea>
+    </div>
+
+    <!-- LAYER + LEGENDA -->
+    <div class="grid-3">
+
+      <!-- PILIH LAYER -->
+      <div class="sub-box">
+
+        <div class="sub-header" onclick="toggleDropdown()">
+          Jenis Layer <span>▼</span>
+        </div>
+
+        <div class="dropdown-content" id="dropdown-menu">
+          <div onclick="changeLayer('osm')">OpenStreetMap</div>
+          <div onclick="changeLayer('satellite')">Satellite</div>
+          <div onclick="changeLayer('streets')">Streets</div>
+        </div>
+
+        <div id="map"></div>
+      </div>
+
+      <!-- JENIS PETA & LEGENDA -->
+      <div class="sub-box">
+
+        <div class="sub-header">Pilih Peta</div>
+        <div class="legend-list">
+          <label class="legend-item"><input type="checkbox"> Lokasi UMKM Rongsokan</label>
+          <label class="legend-item"><input type="checkbox"> Service Area UMKM Rongsokan</label>
+          <label class="legend-item"><input type="checkbox"> Lokasi Potensial TPS3R</label>
+        </div>
+
+        <div class="sub-header">Legenda</div>
+        <div class="legend-list">
+          <label class="legend-item"><input type="checkbox"> Kurang Sesuai</label>
+          <label class="legend-item"><input type="checkbox"> Cukup Sesuai</label>
+          <label class="legend-item"><input type="checkbox"> Sangat Sesuai</label>
+          <label class="legend-item"><input type="checkbox"> Batas Administrasi</label>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ANGGOTA -->
+    <div class="anggota-box">
+      <div class="sub-header">Anggota</div>
+
+      <div class="anggota-grid">
+  <script>
+    const anggotaList = [
+      { foto: "img/anggota1.jpg", nama: "Andi Saputra", nim: "211101221001" },
+      { foto: "img/anggota2.jpg", nama: "Maya Lestari", nim: "211101221002" },
+      { foto: "img/anggota3.jpg", nama: "Rizky Ramadhan", nim: "211101221003" },
+      { foto: "img/anggota4.jpg", nama: "Dewi Puspita", nim: "211101221004" },
+      { foto: "img/anggota5.jpg", nama: "Fajar Prakoso", nim: "211101221005" },
+      { foto: "img/anggota6.jpg", nama: "Nadia Fitri", nim: "211101221006" },
+      { foto: "img/anggota7.jpg", nama: "Bagus Permana", nim: "211101221007" }
+    ];
+
+    anggotaList.forEach(anggota => {
+      document.write(`
+        <div class="anggota">
+          <img class="anggota-img" src=${anggota.nama}</p>
+          <p>${anggota.nim}</p>
+        </div>
+      `);
+    });
+  </script>
+</div>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    function toggleDropdown() {
+      const menu = document.getElementById("dropdown-menu");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    let map = L.map("map").setView([-6.97, 110.42], 13);
+
+    let baseLayers = {
+      osm: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"),
+      satellite: L.tileLayer("https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"),
+      streets: L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}")
+    };
+
+    baseLayers.osm.addTo(map);
+
+    function changeLayer(name) {
+      Object.values(baseLayers).forEach(layer => map.removeLayer(layer));
+      baseLayers[name].addTo(map);
+      document.getElementById("dropdown-menu").style.display = "none";
+    }
+  </script>
+
+</body>
+</html>

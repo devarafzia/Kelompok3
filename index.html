@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pemetaan TPS3R - Kelurahan Kaligawe 2025</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(to bottom, #ffb35c, #ffe173);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 30px;
+    }
+    .header {
+      background: #c70000;
+      color: white;
+      border-radius: 20px;
+      padding: 30px 10px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 36px;
+      font-weight: 900;
+    }
+    .header p {
+      margin: 5px 0 0;
+      font-size: 20px;
+    }
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      margin-bottom: 40px;
+    }
+    .box-title {
+      font-size: 20px;
+      color: #c70000;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .deskripsi-area {
+      width: 100%;
+      height: 120px;
+      border: 2px solid #f0a0a0;
+      border-radius: 15px;
+      padding: 15px;
+      font-size: 14px;
+      resize: none;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 40px;
+      align-items: stretch;
+    }
+    @media (max-width: 900px) {
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+    .sub-box {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .sub-box.map-box {
+      display: flex;
+      flex-direction: column;
+    }
+    .sub-header {
+      background: #c70000;
+      color: white;
+      padding: 14px 18px;
+      font-weight: bold;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .dropdown-content {
+      background: #fff0f0;
+      padding: 10px 20px;
+      display: none;
+    }
+    .dropdown-content.show {
+      display: block;
+    }
+    .dropdown-content div {
+      padding: 10px 12px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #c70000;
+      border-radius: 8px;
+      transition: background 0.2s;
+      margin-bottom: 5px;
+    }
+    .dropdown-content div:hover {
+      background: #ffe0e0;
+    }
+    .dropdown-content div.active {
+      background: #c70000;
+      color: white;
+    }
+    #map {
+      width: 100%;
+      flex: 1;
+      min-height: 400px;
+    }
+    .legend-list {
+      padding: 15px 20px;
+      font-size: 14px;
+      color: #c70000;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .legend-item input[type="checkbox"] {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+      accent-color: #c70000;
+      cursor: pointer;
+    }
+    .legend-item .color-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      margin-right: 10px;
+      border: 1px solid #999;
+    }
+    .legend-item .zoom-btn {
+      margin-left: auto;
+      background: #c70000;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .legend-item .zoom-btn:hover {
+      background: #a00000;
+    }
+    .legend-section {
+      border-top: 1px solid #f0a0a0;
+    }
+    .legend-section-title {
+      padding: 10px 20px;
+      font-weight: bold;
+      color: #c70000;
+      font-size: 13px;
+      background: #fff5f5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .legend-section-title .zoom-btn {
+      background: #c70000;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .legend-section-title .zoom-btn:hover {
+      background: #a00000;
+    }
+    .anggota-box {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      margin-bottom: 40px;
+      overflow: hidden;
+    }
+    .anggota-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      padding: 30px;
+    }
+    .anggota-row {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .anggota {
+      width: 130px;
+      text-align: center;
+    }
+    .anggota-img {
+      width: 100%;
+      height: 120px;
+      border-radius: 15px;
+      background: #d9f2ff;
+      object-fit: cover;
+    }
+    .anggota p {
+      color: #c70000;
+      margin: 5px 0 0;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>PEMETAAN UMKM RONGSOKAN DAN POTENSI TPS3R</h1>
+      <p>Kelurahan Kaligawe 2025</p>
+    </div>
+
+    <div class="box">
+      <div class="box-title">WebGIS ini menampilkan pemetaan lokasi UMKM rongsokan beserta analisis service area untuk melihat jangkauan pelayanannya, serta peta potensi pembangunan TPS3R sebagai dasar perencanaan pengelolaan sampah yang lebih efektif dan berkelanjutan.
+</div>
+    </div>
+
+    <div class="grid-3">
+      <div class="sub-box map-box" id="map-container">
+        <div class="sub-header" id="layer-header" onclick="toggleDropdown()">
+          <span id="current-layer-text">Jenis Layer: OpenStreetMap</span>
+          <span id="dropdown-arrow">▼</span>
+        </div>
+        <div class="dropdown-content" id="dropdown-menu">
+          <div id="opt-osm" class="active" onclick="changeLayer('osm')">OpenStreetMap</div>
+          <div id="opt-satellite" onclick="changeLayer('satellite')">Satellite</div>
+          <div id="opt-streets" onclick="changeLayer('streets')">Streets</div>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <div class="sub-box" id="legend-container">
+        <div class="sub-header" style="cursor: default;">Pilih Peta</div>
+        <div class="legend-list">
+          <label class="legend-item">
+            <input type="checkbox" id="chk-eksisting" onchange="togglePeta('eksisting')">
+            Lokasi UMKM Rongsokan
+            <button class="zoom-btn" onclick="event.preventDefault(); zoomToLayer('eksisting')">Zoom</button>
+          </label>
+          <label class="legend-item">
+            <input type="checkbox" id="chk-service" onchange="togglePeta('service')">
+            Service Area UMKM Rongsokan
+            <button class="zoom-btn" onclick="event.preventDefault(); zoomToLayer('service')">Zoom</button>
+          </label>
+          <label class="legend-item">
+            <input type="checkbox" id="chk-potensi" onchange="togglePeta('potensi')">
+            Lokasi Potensial TPS3R
+            <button class="zoom-btn" onclick="event.preventDefault(); zoomToLayer('potensi')">Zoom</button>
+          </label>
+          <label class="legend-item">
+            <input type="checkbox" id="chk-batas" onchange="toggleBatasAdmin()">
+            Batas Administrasi
+            <button class="zoom-btn" onclick="event.preventDefault(); zoomToLayer('batas')">Zoom</button>
+          </label>
+        </div>
+
+        <div class="sub-header" style="cursor: default;">Legenda</div>
+        
+        <div id="legend-eksisting" class="legend-section hidden">
+          <div class="legend-section-title">
+            Eksisting UMKM Rongsokan
+            <button class="zoom-btn" onclick="zoomToLayer('eksisting')">Zoom All</button>
+          </div>
+          <div class="legend-list">
+            <label class="legend-item">
+              <input type="checkbox" id="chk-eks-kurang" onchange="toggleKelasLayer('eksisting', 'kurang')">
+              <div class="color-box" style="background: rgba(231, 76, 60, 0.5);"></div>
+              Kurang Sesuai
+              <button class="zoom-btn" onclick="event.preventDefault(); zoomToKelas('eksisting', 'kurang')">Zoom</button>
+            </label>
+            <label class="legend-item">
+              <input type="checkbox" id="chk-eks-cukup" onchange="toggleKelasLayer('eksisting', 'cukup')">
+              <div class="color-box" style="background: rgba(241, 196, 15, 0.5);"></div>
+              Cukup Sesuai
+              <button class="zoom-btn" onclick="event.preventDefault(); zoomToKelas('eksisting', 'cukup')">Zoom</button>
+            </label>
+          </div>
+        </div>
+
+        <div id="legend-service" class="legend-section hidden">
+          <div class="legend-section-title">
+            Service Area UMKM
+            <button class="zoom-btn" onclick="zoomToLayer('service')">Zoom All</button>
+          </div>
+          <div class="legend-list">
+            <label class="legend-item">
+              <input type="checkbox" id="chk-srv-1" onchange="toggleKelasLayer('service', '1')">
+              <div class="color-box" style="background: rgba(231, 76, 60, 0.5);"></div>
+              Kelas 1 (0-100m)
+              <button class="zoom-btn" onclick="event.preventDefault(); zoomToKelas('service', '1')">Zoom</button>
+            </label>
+            <label class="legend-item">
+              <input type="checkbox" id="chk-srv-2" onchange="toggleKelasLayer('service', '2')">
+              <div class="color-box" style="background: rgba(241, 196, 15, 0.5);"></div>
+              Kelas 2 (100-250m)
+              <button class="zoom-btn" onclick="event.preventDefault(); zoomToKelas('service', '2')">Zoom</button>
+            </label>
+            <label class="legend-item">
+              <input type="checkbox" id="chk-srv-3" onchange="toggleKelasLayer('service', '3')">
+              <div class="color-box" style="background: rgba(39, 174, 96, 0.5);"></div>
+              Kelas 3 (>250m)
+              <button class="zoom-btn" onclick="event.preventDefault(); zoomToKelas('service', '3')">Zoom</button>
+            </label>
+          </div>
+        </div>
+
+        <div id="legend-potensi" class="legend-section hidden">
+          <div class="legend-section-title">
+            Potensi TPS3R
+            <button class="zoom-btn" onclick="zoomToLayer('potensi')">Zoom All</button>
+          </div>
+          <div class="legend-list">
+            <label class="legend-item">
+              <input type="checkbox" id="chk-pot-kurang" onchange="toggleKelasLayer('potensi', 'kurang')">
+              <div class="color-box" style="background: rgba(231, 76, 60, 0.5);"></div>
+              Kurang Berpotensi
+              <button class="zoom-btn" onclick="event.preventDefault(); zoomToKelas('potensi', 'kurang')">Zoom</button>
+            </label>
+            <label class="legend-item">
+              <input type="checkbox" id="chk-pot-cukup" onchange="toggleKelasLayer('potensi', 'cukup')">
+              <div class="color-box" style="background: rgba(241, 196, 15, 0.5);"></div>
+              Cukup Berpotensi
+              <button class="zoom-btn" onclick="event.preventDefault(); zoomToKelas('potensi', 'cukup')">Zoom</button>
+            </label>
+            <label class="legend-item">
+              <input type="checkbox" id="chk-pot-sangat" onchange="toggleKelasLayer('potensi', 'sangat')">
+              <div class="color-box" style="background: rgba(39, 174, 96, 0.5);"></div>
+              Sangat Berpotensi
+              <button class="zoom-btn" onclick="event.preventDefault(); zoomToKelas('potensi', 'sangat')">Zoom</button>
+            </label>
+          </div>
+        </div>
+
+        <div id="legend-batas" class="legend-section hidden">
+          <div class="legend-section-title">
+            Batas Wilayah
+            <button class="zoom-btn" onclick="zoomToLayer('batas')">Zoom</button>
+          </div>
+          <div class="legend-list">
+            <label class="legend-item">
+              <div class="color-box" style="background: transparent; border: 3px solid #333;"></div>
+              Batas Administrasi Kelurahan
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="anggota-box">
+      <div class="sub-header" style="cursor: default;">Anggota</div>
+      <div class="anggota-grid" id="anggota-container">
+        <div class="anggota-row" id="row1"></div>
+        <div class="anggota-row" id="row2"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.min.js"></script>
+  <script>
+    proj4.defs("EPSG:32749", "+proj=utm +zone=49 +south +datum=WGS84 +units=m +no_defs");
+
+    function convertUTMtoWGS84(geojson) {
+      const converted = JSON.parse(JSON.stringify(geojson));
+      
+      function transformCoords(coords) {
+        if (typeof coords[0] === 'number') {
+          const [x, y] = coords;
+          if (x > 180 || x < -180 || y > 90 || y < -90) {
+            const [lon, lat] = proj4("EPSG:32749", "EPSG:4326", [x, y]);
+            return [lon, lat];
+          }
+          return coords;
+        }
+        return coords.map(transformCoords);
+      }
+
+      converted.features.forEach(feature => {
+        if (feature.geometry && feature.geometry.coordinates) {
+          feature.geometry.coordinates = transformCoords(feature.geometry.coordinates);
+        }
+      });
+
+      return converted;
+    }
+
+    const map = L.map("map").setView([-6.967, 110.447], 15);
+
+    let currentBaseLayer = 'osm';
+    const baseLayers = {
+      osm: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap'
+      }),
+      satellite: L.tileLayer("https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
+        attribution: '&copy; Google'
+      }),
+      streets: L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}", {
+        attribution: '&copy; Google'
+      })
+    };
+
+    const layerNames = {
+      osm: 'OpenStreetMap',
+      satellite: 'Satellite',
+      streets: 'Streets'
+    };
+
+    baseLayers.osm.addTo(map);
+
+    function toggleDropdown() {
+      const menu = document.getElementById("dropdown-menu");
+      const isOpen = menu.classList.contains("show");
+      menu.classList.toggle("show");
+    }
+
+    function changeLayer(layerName) {
+      Object.values(baseLayers).forEach(layer => map.removeLayer(layer));
+      baseLayers[layerName].addTo(map);
+      currentBaseLayer = layerName;
+      
+      document.querySelectorAll('.dropdown-content div').forEach(el => el.classList.remove('active'));
+      document.getElementById('opt-' + layerName).classList.add('active');
+      document.getElementById('current-layer-text').textContent = 'Jenis Layer: ' + layerNames[layerName];
+      
+      document.getElementById("dropdown-menu").classList.remove("show");
+    }
+
+    const layers = {
+      eksisting: {
+        kurang: null,
+        cukup: null
+      },
+      service: {
+        1: null,
+        2: null,
+        3: null
+      },
+      potensi: {
+        kurang: null,
+        cukup: null,
+        sangat: null
+      },
+      batas: null
+    };
+
+    const layerStyles = {
+      eksisting: {
+        kurang: { color: '#e74c3c', fillColor: '#e74c3c', fillOpacity: 0.5, radius: 8, weight: 2 },
+        cukup: { color: '#f1c40f', fillColor: '#f1c40f', fillOpacity: 0.5, radius: 8, weight: 2 }
+      },
+      service: {
+        1: { color: '#e74c3c', fillColor: '#e74c3c', weight: 2, fillOpacity: 0.5 },
+        2: { color: '#f1c40f', fillColor: '#f1c40f', weight: 2, fillOpacity: 0.5 },
+        3: { color: '#27ae60', fillColor: '#27ae60', weight: 2, fillOpacity: 0.5 }
+      },
+      potensi: {
+        kurang: { color: '#e74c3c', fillColor: '#e74c3c', weight: 2, fillOpacity: 0.5 },
+        cukup: { color: '#f1c40f', fillColor: '#f1c40f', weight: 2, fillOpacity: 0.5 },
+        sangat: { color: '#27ae60', fillColor: '#27ae60', weight: 2, fillOpacity: 0.5 }
+      },
+      batas: { color: '#333', weight: 3, fillOpacity: 0, dashArray: '5, 5' }
+    };
+
+    function loadGeoJSON(url, style, isPoint = false, needsConversion = false) {
+      return fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          let processedData = needsConversion ? convertUTMtoWGS84(data) : data;
+          
+          if (isPoint) {
+            return L.geoJSON(processedData, {
+              pointToLayer: function(feature, latlng) {
+                return L.circleMarker(latlng, style);
+              }
+            });
+          }
+          return L.geoJSON(processedData, { style: style });
+        })
+        .catch(err => {
+          console.error('Error loading GeoJSON:', url, err);
+          return null;
+        });
+    }
+
+    let layersLoaded = false;
+
+    async function initLayers() {
+      try {
+        layers.eksisting.kurang = await loadGeoJSON('UMKM_Rongsokan_Kurang_Sesuai.geojson', layerStyles.eksisting.kurang, true, false);
+        layers.eksisting.cukup = await loadGeoJSON('UMKM_Rongsokan_Cukup_Sesuai.geojson', layerStyles.eksisting.cukup, true, false);
+
+        layers.service['1'] = await loadGeoJSON('Service_Area_1.geojson', layerStyles.service['1'], false, true);
+        layers.service['2'] = await loadGeoJSON('Service_Area_2.geojson', layerStyles.service['2'], false, true);
+        layers.service['3'] = await loadGeoJSON('Service_Area_3.geojson', layerStyles.service['3'], false, true);
+
+        layers.potensi.kurang = await loadGeoJSON('AREA_TPS3R_Kurang_Berpotensi.geojson', layerStyles.potensi.kurang, false, true);
+        layers.potensi.cukup = await loadGeoJSON('AREA_TPS3R_Cukup_Berpotensi.geojson', layerStyles.potensi.cukup, false, true);
+        layers.potensi.sangat = await loadGeoJSON('AREA_TPS3R_Sangat_Berpotensi.geojson', layerStyles.potensi.sangat, false, true);
+
+        layers.batas = await loadGeoJSON('Batas Administrasi Kelurahan.geojson', layerStyles.batas, false, false);
+
+        layersLoaded = true;
+        console.log('All layers loaded successfully!');
+        
+        document.getElementById('chk-batas').checked = true;
+        document.getElementById('legend-batas').classList.remove('hidden');
+        if (layers.batas) {
+          map.addLayer(layers.batas);
+          map.fitBounds(layers.batas.getBounds());
+        }
+        
+        adjustMapHeight();
+        
+      } catch (error) {
+        console.error('Error initializing layers:', error);
+      }
+    }
+
+    initLayers();
+
+    function adjustMapHeight() {
+      const legendContainer = document.getElementById('legend-container');
+      const mapContainer = document.getElementById('map-container');
+      
+      if (legendContainer && mapContainer) {
+        const legendHeight = legendContainer.offsetHeight;
+        const mapElement = document.getElementById('map');
+        const headerHeight = document.querySelector('#map-container .sub-header').offsetHeight;
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const dropdownHeight = dropdownMenu.classList.contains('show') ? dropdownMenu.offsetHeight : 0;
+        
+        const newMapHeight = legendHeight - headerHeight - dropdownHeight;
+        if (newMapHeight > 300) {
+          mapElement.style.minHeight = newMapHeight + 'px';
+          map.invalidateSize();
+        }
+      }
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      adjustMapHeight();
+    });
+    resizeObserver.observe(document.getElementById('legend-container'));
+
+    function togglePeta(petaType) {
+      const checkbox = document.getElementById(`chk-${petaType}`);
+      const legendSection = document.getElementById(`legend-${petaType}`);
+      
+      if (checkbox.checked) {
+        legendSection.classList.remove('hidden');
+        Object.keys(layers[petaType]).forEach(kelas => {
+          const kelasCheckbox = getKelasCheckbox(petaType, kelas);
+          if (kelasCheckbox) {
+            kelasCheckbox.checked = true;
+            if (layers[petaType][kelas]) {
+              map.addLayer(layers[petaType][kelas]);
+            }
+          }
+        });
+        zoomToLayer(petaType);
+      } else {
+        legendSection.classList.add('hidden');
+        Object.keys(layers[petaType]).forEach(kelas => {
+          const kelasCheckbox = getKelasCheckbox(petaType, kelas);
+          if (kelasCheckbox) {
+            kelasCheckbox.checked = false;
+          }
+          if (layers[petaType][kelas]) {
+            map.removeLayer(layers[petaType][kelas]);
+          }
+        });
+      }
+      
+      setTimeout(adjustMapHeight, 100);
+    }
+
+    function getKelasCheckbox(petaType, kelas) {
+      const prefixes = {
+        'eksisting': 'chk-eks-',
+        'service': 'chk-srv-',
+        'potensi': 'chk-pot-'
+      };
+      return document.getElementById(prefixes[petaType] + kelas);
+    }
+
+    function toggleKelasLayer(petaType, kelas) {
+      const checkbox = getKelasCheckbox(petaType, kelas);
+      const layer = layers[petaType][kelas];
+      
+      if (!layer) return;
+
+      if (checkbox && checkbox.checked) {
+        map.addLayer(layer);
+      } else {
+        map.removeLayer(layer);
+      }
+    }
+
+    function toggleBatasAdmin() {
+      const checkbox = document.getElementById('chk-batas');
+      const legendSection = document.getElementById('legend-batas');
+      
+      if (checkbox.checked) {
+        legendSection.classList.remove('hidden');
+        if (layers.batas) {
+          map.addLayer(layers.batas);
+          zoomToLayer('batas');
+        }
+      } else {
+        legendSection.classList.add('hidden');
+        if (layers.batas) {
+          map.removeLayer(layers.batas);
+        }
+      }
+      
+      setTimeout(adjustMapHeight, 100);
+    }
+
+    function zoomToLayer(petaType) {
+      if (!layersLoaded) return;
+      
+      let bounds = null;
+      
+      if (petaType === 'batas') {
+        if (layers.batas) {
+          bounds = layers.batas.getBounds();
+        }
+      } else {
+        const layerGroup = layers[petaType];
+        if (layerGroup) {
+          Object.values(layerGroup).forEach(layer => {
+            if (layer) {
+              try {
+                const layerBounds = layer.getBounds();
+                if (layerBounds.isValid()) {
+                  if (!bounds) {
+                    bounds = layerBounds;
+                  } else {
+                    bounds.extend(layerBounds);
+                  }
+                }
+              } catch (e) {
+                console.log('Could not get bounds for layer');
+              }
+            }
+          });
+        }
+      }
+      
+      if (bounds && bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [20, 20] });
+      }
+    }
+
+    function zoomToKelas(petaType, kelas) {
+      if (!layersLoaded) return;
+      
+      const layer = layers[petaType][kelas];
+      if (layer) {
+        try {
+          const bounds = layer.getBounds();
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [20, 20] });
+          }
+        } catch (e) {
+          console.log('Could not zoom to layer');
+        }
+      }
+    }
+
+    const anggotaList = [
+      { foto: "a1.jpg", nama: "Raya Nirwanawati", nim: "21110122120023" },
+      { foto: "a2.jpg", nama: "Reva Aulia", nim: "21110122130062" },
+      { foto: "a3.jpg", nama: "Ahmad Wildan Syauqi", nim: "21110122130074" },
+      { foto: "a4.jpg", nama: "Devara Fauzia Fatfa", nim: "21110122130080" },
+      { foto: "a5.jpg", nama: "Rangga Tohdjaya", nim: "21110122130083" },
+      { foto: "a6.jpg", nama: "Ruben Reiki Indrawansyah", nim: "21110122140134" },
+      { foto: "a7.jpg", nama: "Safira Nadifa Azhari", nim: "21110122140161" }
+    ];
+
+    const row1 = document.getElementById('row1');
+    const row2 = document.getElementById('row2');
+    
+    anggotaList.forEach((anggota, index) => {
+      const div = document.createElement('div');
+      div.className = 'anggota';
+      div.innerHTML = `
+        <img class="anggota-img" src="${anggota.foto}" alt="${anggota.nama}" onerror="this.style.background='#d9f2ff'">
+        <p>${anggota.nama}</p>
+        <p>${anggota.nim}</p>
+      `;
+      
+      if (index < 4) {
+        row1.appendChild(div);
+      } else {
+        row2.appendChild(div);
+      }
+    });
+  </script>
+</body>
+</html>
